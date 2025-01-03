@@ -2,9 +2,8 @@
 
 namespace App\Providers\Filament;
 
-use App\Http\Middleware\{ApplyTenantScopes, FilamentSettings};
+use App\Http\Middleware\{CheckTenant, FilamentSettings};
 use App\Livewire\UserProfile;
-use App\Models\Store;
 use Filament\Http\Middleware\{Authenticate, DisableBladeIconComponents, DispatchServingFilamentEvent};
 use Filament\Navigation\MenuItem;
 use Filament\Support\Enums\MaxWidth;
@@ -16,7 +15,6 @@ use Illuminate\Session\Middleware\{AuthenticateSession, StartSession};
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Joaopaulolndev\FilamentEditProfile\FilamentEditProfilePlugin;
 use Joaopaulolndev\FilamentEditProfile\Pages\EditProfilePage;
-use Stancl\Tenancy\Middleware\{InitializeTenancyByDomain, PreventAccessFromCentralDomains};
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -26,16 +24,12 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->tenant(Store::class, 'slug')
-            ->tenantMenu(fn () => auth_user()->stores()->count() > 1)
             ->login()
-            ->breadcrumbs(false)
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->discoverClusters(in: app_path('Filament/Admin/Clusters'), for: 'App\\Filament\\Admin\\Clusters')
-            ->userMenuItems([
-                'profile' => MenuItem::make()->icon('heroicon-o-user'),
+            ->widgets([
             ])
             ->plugins([
                 FilamentEditProfilePlugin::make()
@@ -64,19 +58,12 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 FilamentSettings::class,
+                CheckTenant::class,
             ])
-            ->middleware([
-                'universal',
-                InitializeTenancyByDomain::class,
-                PreventAccessFromCentralDomains::class,
-            ], isPersistent: true)
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->tenantMiddleware([
-                ApplyTenantScopes::class,
-            ], isPersistent: true)
             ->spa()
-            ->maxContentWidth(MaxWidth::Full);
+            ->maxContentWidth(MaxWidth::ScreenTwoExtraLarge);
     }
 }

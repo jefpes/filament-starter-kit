@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Ability, Store, User};
+use App\Enums\Permission;
+use App\Models\{Ability, Settings, User};
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -23,9 +24,7 @@ class DatabaseSeeder extends Seeder
             'password'          => Hash::make('admin'),
         ]);
 
-        $this->call(StoreSeeder::class);
-
-        $user->stores()->sync(Store::pluck('id')->toArray());
+        Settings::create(['user_id' => $user->id]);
 
         // Criar a role 'master'
         $role = $user->roles()->create([
@@ -33,9 +32,9 @@ class DatabaseSeeder extends Seeder
             'hierarchy' => 0,
         ]);
 
-        $this->call(AbilitySeeder::class);
-
-        $role->abilities()->sync(Ability::pluck('id')->toArray());
+        foreach (Permission::cases() as $permission) {
+            $role->abilities()->create(['name' => $permission->value]);
+        }
 
         $user = User::create([
             'name'              => 'admin',
@@ -45,9 +44,7 @@ class DatabaseSeeder extends Seeder
             'remember_token'    => 'ulju8vGmyW7Ju2YXZLhYradlbIBVK1kUWG7Moow0ENieWYwbSKpiXJSfNMXc',
         ]);
 
-        $this->call(StoreSeeder::class);
-
-        $user->stores()->sync(Store::pluck('id')->toArray());
+        Settings::create(['user_id' => $user->id]);
 
         $role = $user->roles()->create([
             'name'      => 'admin',
@@ -56,6 +53,6 @@ class DatabaseSeeder extends Seeder
 
         $role->abilities()->sync(Ability::pluck('id')->toArray());
 
-        $this->call(SettingsSeeder::class);
+        $this->call(CompanySeeder::class);
     }
 }

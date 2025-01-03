@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\{Builder, Model};
+use Illuminate\Database\Eloquent\{Builder};
 
 /**
  * Class Role
@@ -22,12 +21,12 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
  */
-class Role extends Model
+class Role extends BaseModel
 {
-    use HasUlids;
     use HasFactory;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'hierarchy',
     ];
@@ -44,6 +43,6 @@ class Role extends Model
 
     public function scopeHierarchy(Builder $q, User $user): Builder
     {
-        return $q->where('hierarchy', '>=', $user->roles()->pluck('hierarchy')->max());
+        return $q->where('hierarchy', '>=', $user->roles()->query()->pluck('hierarchy')->max());
     }
 }

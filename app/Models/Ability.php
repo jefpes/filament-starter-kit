@@ -16,12 +16,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $id
  * @property string $name
  */
+
 class Ability extends Model
 {
     use HasFactory;
     use HasUlids;
-
-    protected $fillable = ['name'];
 
     public function roles(): BelongsToMany
     {

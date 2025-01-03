@@ -1,9 +1,9 @@
 @props(['label' => null,'messages' => null])
 <div>
   @if ($label)
-    <label class="block mb-2 text-sm font-medium" style="{{ 'color:' . App\Models\Settings::query()->first()->select_text_color }}"> {{ __($label) }} </label>
+    <label class="block mb-2 text-sm font-medium" style="{{ 'color:' . App\Models\Company::query()->first()->select_text_color }}"> {{ __($label) }} </label>
   @endif
-  <select style="{{ 'background-color:' . App\Models\Settings::query()->first()->select_color . ';color:' . App\Models\Settings::query()->first()->select_text_color }}"
+  <select style="{{ 'background-color:' . App\Models\Company::query()->first()->select_color . ';color:' . App\Models\Company::query()->first()->select_text_color }}"
     {{ $attributes->merge(['class' => 'border text-sm rounded-lg block w-full p-2']) }}>
     {{ $slot }}
   </select>

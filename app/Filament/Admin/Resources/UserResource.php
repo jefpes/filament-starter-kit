@@ -2,11 +2,10 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Enums\Permission;
 use App\Filament\Admin\Clusters\ManagementCluster;
 use App\Filament\Admin\Resources\UserResource\{Pages};
-use App\Models\{User};
-use Filament\Forms\Components\{CheckboxList};
+use App\Models\{Role, User};
+use Filament\Forms\Components\{CheckboxList, Fieldset};
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Resource;
@@ -18,20 +17,14 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $cluster = ManagementCluster::class;
+    protected static ?int $navigationSort = 2;
 
-    protected static ?int $navigationSort = 12;
+    protected static ?string $cluster = ManagementCluster::class;
 
     public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return auth_user()->navigation_mode ? SubNavigationPosition::Start : SubNavigationPosition::Top;
     }
-
-    protected static ?string $navigationIcon = 'heroicon-o-finger-print';
-
-    protected static bool $isScopedToTenant = false;
-
-    protected static ?string $recordTitleAttribute = 'email';
 
     public static function getModelLabel(): string
     {
@@ -49,11 +42,13 @@ class UserResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rules([unique_within_tenant_rule(static::$model)]),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rules([unique_within_tenant_rule(static::$model)]),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->required(fn (string $operation): bool => $operation === 'create')
@@ -67,38 +62,18 @@ class UserResource extends Resource
                     ->requiredWith('password')
                     ->dehydrated(false)
                     ->maxLength(8),
-                Forms\Components\Grid::make()
-                    ->columns(1)
-                    ->columnSpanFull()
-                    ->schema([
-                        CheckboxList::make('stores')
-                            ->relationship(
-                                'stores',
-                                'name',
-                                modifyQueryUsing: fn ($query) => $query->orderBy('name')
-                                ->when(
-                                    auth_user()->hasAbility(Permission::MASTER->value) === false,
-                                    fn ($query) => $query->whereIn('id', auth_user()->stores->pluck('id')->toArray())
-                                )
-                            )
-                            ->columns(['sm' => 1, 'md' => 2])
-                            ->gridDirection('row')
-                            ->bulkToggleable(),
-                    ]),
-                Forms\Components\Grid::make()
-                    ->columns(1)
-                    ->columnSpanFull()
-                    ->schema([
-                        CheckboxList::make('roles')
-                            ->relationship(
-                                'roles',
-                                'name',
-                                modifyQueryUsing: fn ($query) => $query->orderBy('name')->where('hierarchy', '>=', Auth::user()->roles->min('hierarchy')) //@phpstan-ignore-line
-                            )
-                            ->columns(['sm' => 1, 'md' => 3])
-                            ->gridDirection('row')
-                            ->bulkToggleable(),
-                    ]),
+                Fieldset::make('Roles')->schema([
+                    CheckboxList::make('roles')
+                        ->relationship('roles', 'name')
+                        ->options(
+                            Role::query()
+                                ->where('hierarchy', '>=', Auth::user()->roles->min('hierarchy')) //@phpstan-ignore-line
+                                ->orderBy('id')
+                                ->pluck('name', 'id')
+                        )
+                        ->gridDirection('row')
+                        ->bulkToggleable(),
+                ])->label(null),
             ]);
     }
 
@@ -107,8 +82,9 @@ class UserResource extends Resource
         return $table
             ->recordAction(null)
             ->columns([
-                Tables\Columns\TextColumn::make('people.name')
-                    ->label('Person')
+                Tables\Columns\TextColumn::make('tenant.name')
+                    ->label('Tenant')
+                    ->visible(fn () => auth_user()->tenant_id === null)
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),

@@ -9,6 +9,7 @@ return new class () extends Migration {
     {
         Schema::create('roles', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('tenant_id')->nullable()->constrained(table: 'tenants', column: 'id')->cascadeOnDelete();
             $table->string('name', 100);
             $table->tinyInteger('hierarchy');
             $table->timestamps();

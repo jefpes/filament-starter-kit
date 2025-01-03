@@ -19,18 +19,14 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
-    protected static ?string $cluster = ManagementCluster::class;
+    protected static ?int $navigationSort = 3;
 
-    protected static ?int $navigationSort = 13;
+    protected static ?string $cluster = ManagementCluster::class;
 
     public static function getSubNavigationPosition(): SubNavigationPosition
     {
         return auth_user()->navigation_mode ? SubNavigationPosition::Start : SubNavigationPosition::Top;
     }
-
-    protected static ?string $navigationIcon = 'heroicon-o-identification';
-
-    protected static bool $isScopedToTenant = false;
 
     public static function getModelLabel(): string
     {
@@ -48,9 +44,9 @@ class RoleResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     ->required()
-                    ->maxLength(100),
+                    ->maxLength(100)
+                    ->rules([unique_within_tenant_rule(static::$model)]),
                 Forms\Components\Select::make('hierarchy')
-                    ->required()
                     ->options(
                         function () {
                             $user = Auth::user();
@@ -76,6 +72,10 @@ class RoleResource extends Resource
         return $table
             ->recordAction(null)
             ->columns([
+                Tables\Columns\TextColumn::make('tenant.name')
+                    ->label('Tenant')
+                    ->visible(fn () => auth_user()->tenant_id === null)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('hierarchy')

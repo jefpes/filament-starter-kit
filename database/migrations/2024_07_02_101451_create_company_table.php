@@ -10,13 +10,13 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('company', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->foreignUlid('employee_id')->nullable()->constrained(table: 'people', column: 'id');
+            $table->foreignUlid('tenant_id')->nullable()->constrained(table: 'tenants', column: 'id')->cascadeOnDelete();
             $table->string('name')->nullable();
             $table->string('cnpj')->nullable();
             $table->date('opened_in')->nullable();
-            $table->longText('about')->nullable();
+            $table->string('about')->nullable();
             $table->string('email')->nullable();
             $table->string('logo')->nullable();
             $table->string('favicon')->nullable();

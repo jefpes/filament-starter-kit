@@ -39,7 +39,7 @@ class PhotosRelationManager extends RelationManager
                     ->required()
                     ->directory($this->getOwnerRecord()->getPhotoDirectory()) //@phpstan-ignore-line
                     ->image(),
-                Forms\Components\ToggleButtons::make('public')
+                Forms\Components\ToggleButtons::make('is_public')
                     ->label('Visibilidade')
                     ->inline()
                     ->options([
@@ -57,16 +57,26 @@ class PhotosRelationManager extends RelationManager
             ->recordAction(null)
             ->recordUrl(null)
             ->columns([
-                Tables\Columns\Layout\Stack::make([
-                    Tables\Columns\ImageColumn::make('path')
-                        ->height('100%')
-                        ->width('100%')
-                        ->extraImgAttributes(['class' => 'rounded-md']),
-                ])->space(3),
+                Tables\Columns\Layout\Grid::make()
+                    ->columns(1)
+                    ->schema([
+                        Tables\Columns\Layout\Split::make([
+                            Tables\Columns\Layout\Grid::make()
+                                ->columns(1)
+                                ->schema([
+                                    Tables\Columns\ImageColumn::make('path')
+                                        ->label('Foto')
+                                        ->height(300)
+                                        ->width(240)
+                                        ->extraImgAttributes(['class' => 'rounded-md']),
+                                ])->grow(false),
+                        ]),
+                    ]),
             ])
             ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
+                'md'  => 2,
+                'xl'  => 3,
+                '2xl' => 4,
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
@@ -81,14 +91,14 @@ class PhotosRelationManager extends RelationManager
                     ->using(function (array $data, $livewire): Model {
                         $model      = $livewire->getOwnerRecord();
                         $firstPhoto = $model->{static::$relationship}()->create([
-                            'path'   => $data['path'][0],
-                            'public' => $data['public'],
+                            'path'      => $data['path'][0],
+                            'is_public' => $data['is_public'],
                         ]);
 
                         foreach (array_slice($data['path'], 1) as $path) {
                             $model->{static::$relationship}()->create([
-                                'path'   => $path,
-                                'public' => $data['public'],
+                                'path'      => $path,
+                                'is_public' => $data['is_public'],
                             ]);
                         }
 
@@ -99,23 +109,23 @@ class PhotosRelationManager extends RelationManager
                 Tables\Actions\Action::make('setAsMain')
                     ->authorize('setMainPublic')
                     ->icon('heroicon-o-star')
-                    ->color(fn ($record) => $record->main ? 'success' : 'gray')
+                    ->color(fn ($record) => $record->is_main ? 'success' : 'gray')
                     ->label('Main')
                     ->hiddenLabel()
                     ->iconSize('lg')
                     ->action(function ($record) {
-                        $record->photoable->photos()->update(['main' => false]);
-                        $record->update(['main' => true]);
+                        $record->photoable->photos()->update(['is_main' => false]);
+                        $record->update(['is_main' => true]);
                     }),
                 Tables\Actions\Action::make('setAsPublic')
                     ->authorize('setMainPublic')
-                    ->icon(fn ($record) => $record->public ? 'heroicon-o-eye' : 'heroicon-o-eye-slash')
-                    ->color(fn ($record) => $record->public ? 'warning' : 'gray')
-                    ->label(fn ($record) => $record->public ? 'Public' : 'Private')
+                    ->icon(fn ($record) => $record->is_public ? 'heroicon-o-eye' : 'heroicon-o-eye-slash')
+                    ->color(fn ($record) => $record->is_public ? 'warning' : 'gray')
+                    ->label(fn ($record) => $record->is_public ? 'Public' : 'Private')
                     ->iconSize('lg')
                     ->hiddenLabel()
                     ->action(function ($record) {
-                        $record->update(['public' => !$record->public]);
+                        $record->update(['is_public' => !$record->is_public]);
                     }),
                 Tables\Actions\EditAction::make()
                     ->hiddenLabel()

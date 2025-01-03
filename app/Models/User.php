@@ -2,29 +2,27 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\{FilamentUser, HasAvatar, HasTenants};
-use Filament\Panel;
+use App\Traits\{TenantScopeTrait};
+use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\{BelongsToMany};
-use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasOne};
+use Illuminate\Database\Eloquent\{Builder, SoftDeletes};
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * @property Role $roles
+ * @property \App\Models\Role $roles
  * @property Collection $abilities
- * @property Collection $stores
  *
- *
- * @method BelongsToMany roles()
- * @method Builder abilities()
- * @method BelongsToMany stores()
+ * @method \App\Models\Role roles()
+ * @method Collection abilities()
  *
  * @property string $id
+ * @property string $tenant_id
  * @property string $name
  * @property string $email
  * @property string $password
@@ -36,19 +34,20 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $senary_color
  * @property string|null $font
  * @property bool $navigation_mode
- * @property string|null $avatar_url
+ * @property string $avatar_url
  */
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasTenants, HasAvatar
+class User extends Authenticatable implements MustVerifyEmail, HasAvatar
 {
     use HasFactory;
     use Notifiable;
     use SoftDeletes;
+    use TenantScopeTrait;
     use HasUlids;
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'email',
-        'remember_token',
         'email_verified_at',
         'password',
         'primary_color',
@@ -61,6 +60,11 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         'navigation_mode',
         'avatar_url',
     ];
+
+    /**
+     * @var array<string>
+     */
+    protected $with = ['tenant'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -80,8 +84,7 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
     protected function casts(): array
     {
         return [
-            'password'        => 'hashed',
-            'navigation_mode' => 'bool',
+            'password' => 'hashed',
         ];
     }
 
@@ -108,33 +111,23 @@ class User extends Authenticatable implements MustVerifyEmail, FilamentUser, Has
         return $this->belongsToMany(Role::class);
     }
 
-    public function abilities(): Builder
+    public function settings(): HasOne
+    {
+        return $this->hasOne(Settings::class);
+    }
+
+    public function abilities(): \Illuminate\Database\Eloquent\Builder
     {
         return Ability::query()->whereHas('roles', fn ($query) => $query->whereIn('id', $this->roles->pluck('id'))); //@phpstan-ignore-line
     }
 
     public function hasAbility(string $ability): bool
     {
-        return $this->abilities()->where('name', $ability)->exists();
+        return $this->abilities()->where('name', $ability)->exists(); //@phpstan-ignore-line
     }
 
-    public function stores(): BelongsToMany
+    public function tenant(): BelongsTo
     {
-        return $this->belongsToMany(Store::class);
-    }
-
-    public function getTenants(Panel $panel): Collection
-    {
-        return $this->stores;
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true;
-    }
-
-    public function canAccessTenant(Model $tenant): bool
-    {
-        return $this->stores()->whereKey($tenant)->exists();
+        return $this->belongsTo(Tenant::class);
     }
 }

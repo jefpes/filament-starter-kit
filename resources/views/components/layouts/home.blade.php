@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 @php
-$company = App\Models\Settings::query()->first();
+$company = App\Models\Company::where('tenant_id', (session()->get('tenant')->id ?? null))->first();
 
 // Construir os estilos dinâmicos
 $bodyStyles = [];
