@@ -22,6 +22,7 @@ O Filament Multi-Tenancy Start Kit é um projeto base desenvolvido para facilita
 
 -   Laravel
 -   Filament V3
+-   Tenancy for Laravel
 
 ## Instalação
 
