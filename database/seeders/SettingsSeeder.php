@@ -15,7 +15,7 @@ class SettingsSeeder extends Seeder
             'name'      => 'Motor Market',
             'opened_in' => '2021-07-02',
             'cnpj'      => '99.999.999/9999-99',
-            'about'     => 'Somos uma empresa de venda de veículos, na qual prezamos pela qualidade e satisfação do cliente.',
+            'about'     => 'Somos uma empresa de software, na qual prezamos pela qualidade e satisfação do cliente.',
             'email'     => 'google@gmail.com',
             'x'         => 'x.com',
             'instagram' => 'instagram.com',
