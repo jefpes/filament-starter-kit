@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@tailwind variants;
+
+@layer base {
+    :root.dark {
+        color-scheme: dark;
+    }
+
+    /* When scrolling to validation error, do not hide element behind the top bar */
+    [data-field-wrapper] {
+        scroll-margin-top: 8rem;
+    }
+}

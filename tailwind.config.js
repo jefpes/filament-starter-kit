@@ -1,20 +1,18 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
-
 /** @type {import('tailwindcss').Config} */
+import preset from './vendor/filament/support/tailwind.config.preset'
+
 export default {
+    presets: [preset],
     content: [
-        './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-        './storage/framework/views/*.php',
-        './resources/**/*.blade.php',
-        './resources/**/*.js',
-        './resources/**/*.vue',
+        './app/Filament/Admin/**/*.php',
+        './app/Filament/Master/**/*.php',
+        './app/Livewire/**/*.php',
+        './resources/views/**/**/*.blade.php',
+        './vendor/filament/**/*.blade.php',
     ],
     theme: {
-        extend: {
-            fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-            },
-        },
+        extend: {},
     },
     plugins: [],
-};
+}
+

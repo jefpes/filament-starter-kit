@@ -1,2 +1,5 @@
+# Ignora tudo dentro de storage
 *
+
+# Não ignora o próprio arquivo .gitignore
 !.gitignore
