@@ -12,7 +12,7 @@ class SettingsSeeder extends Seeder
     public function run(): void
     {
         \App\Models\Settings::create([
-            'name'      => 'Motor Market',
+            'name'      => 'FKS',
             'opened_in' => '2021-07-02',
             'cnpj'      => '99.999.999/9999-99',
             'about'     => 'Somos uma empresa de software, na qual prezamos pela qualidade e satisfação do cliente.',
