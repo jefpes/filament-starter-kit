@@ -21,6 +21,8 @@ class RoleResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static ?string $navigationIcon = 'heroicon-o-identification';
+
     protected static ?string $cluster = ManagementCluster::class;
 
     public static function getSubNavigationPosition(): SubNavigationPosition

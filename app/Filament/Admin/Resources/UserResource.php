@@ -19,6 +19,8 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    protected static ?string $navigationIcon = 'heroicon-o-finger-print';
+
     protected static ?string $cluster = ManagementCluster::class;
 
     public static function getSubNavigationPosition(): SubNavigationPosition

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\Permission;
-use App\Models\{Ability, Settings, User};
+use App\Models\{Ability, User};
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +15,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
         // Criar o usuário 'master'
         $user = User::create([
             'name'              => 'master',
@@ -23,8 +22,6 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
             'password'          => Hash::make('admin'),
         ]);
-
-        Settings::create(['user_id' => $user->id]);
 
         // Criar a role 'master'
         $role = $user->roles()->create([
@@ -44,8 +41,6 @@ class DatabaseSeeder extends Seeder
             'remember_token'    => 'ulju8vGmyW7Ju2YXZLhYradlbIBVK1kUWG7Moow0ENieWYwbSKpiXJSfNMXc',
         ]);
 
-        Settings::create(['user_id' => $user->id]);
-
         $role = $user->roles()->create([
             'name'      => 'admin',
             'hierarchy' => 1,
@@ -53,6 +48,6 @@ class DatabaseSeeder extends Seeder
 
         $role->abilities()->sync(Ability::pluck('id')->toArray());
 
-        $this->call(CompanySeeder::class);
+        $this->call(SettingsSeeder::class);
     }
 }
